@@ -1,84 +1,94 @@
-%% 案例4.1.5：二次型与二次曲面的可视化展示
-% 功能：绘制二维二次型 x^T A x 定义的曲线，展示正定、负定、不定三种情形
-clear; clc; close all;
+%% 案例4.1.5：二次型与三维二次曲面的可视化展示.m
+%%演示三种典型的二次曲面：椭球面、单叶双曲面、双叶双曲面
+%% 清空环境
+clc; clear; close all;
 
-% 调整图形窗口大小，让2×2子图更舒展（可选）
-figure('Name', '二次型与二次曲线', 'NumberTitle', 'off', 'Position', [100, 100, 800, 700]);
+%% 图形窗口设置
+figure(1);
+set(gcf, 'Position', [100, 100, 1200, 400]);
 
-% --- 情形1：正定二次型（椭圆） ---
-subplot(2, 2, 1);
-A_posdef = [3, 1; 1, 2]; % 正定矩阵，特征值均大于0
-[V, D] = eig(A_posdef);
-fprintf('正定矩阵 A = \n'); disp(A_posdef);
-fprintf('特征值: λ1=%.1f, λ2=%.1f\n', D(1,1), D(2,2));
+%% ====================== 1. 椭球面 ======================
+u = linspace(0, pi, 50);
+v = linspace(0, 2*pi, 50);
+[U, V] = meshgrid(u, v);
 
-% 生成网格（范围缩小至 ±1.5，步长加密为 0.05）
-[x, y] = meshgrid(-1.5:0.05:1.5, -1.5:0.05:1.5);
-z = A_posdef(1,1)*x.^2 + 2*A_posdef(1,2)*x.*y + A_posdef(2,2)*y.^2;
+a = sqrt(2);  b = 1;  c = sqrt(3);
+X1 = a * sin(U) .* cos(V);
+Y1 = b * sin(U) .* sin(V);
+Z1 = c * cos(U);
 
-% 绘制等高线 x^T A x = 1
-contour(x, y, z, [1, 1], 'b', 'LineWidth', 2);
-hold on; grid on; axis equal;
-xlim([-1.5, 1.5]); ylim([-1.5, 1.5]);
-xlabel('x'); ylabel('y');
-% 双行标题：总标题 + 本子图说明
-title({'二次型与二次曲线：矩阵正定性决定曲线形状'; '正定二次型: x^T A x = 1 (椭圆)'});
+subplot(1, 3, 1);
+surf(X1, Y1, Z1, 'FaceAlpha', 0.85, 'EdgeColor', 'none');
+shading interp;   % 平滑着色，增强立体感
+colormap('default');
+xlabel('x'); ylabel('y'); zlabel('z');
+title('椭球面 (正定矩阵)');
+axis equal;
+view(45, 30);
+grid on;
 
-% 绘制特征向量方向（主轴）
-quiver(0, 0, V(1,1)*0.8, V(2,1)*0.8, 0, 'r', 'LineWidth', 1.5, 'MaxHeadSize', 0.3);
-quiver(0, 0, V(1,2)*0.8, V(2,2)*0.8, 0, 'r', 'LineWidth', 1.5, 'MaxHeadSize', 0.3);
-legend('x^T A x = 1', '特征向量方向(主轴)');
+%% ====================== 2. 单叶双曲面 ======================
+u = linspace(-1.2, 1.2, 30);
+v = linspace(0, 2*pi, 50);
+[U, V] = meshgrid(u, v);
+
+X2 = cosh(U) .* cos(V);
+Y2 = cosh(U) .* sin(V);
+Z2 = sinh(U);
+
+subplot(1, 3, 2);
+surf(X2, Y2, Z2, 'FaceAlpha', 0.85, 'EdgeColor', 'none');
+shading interp;
+xlabel('x'); ylabel('y'); zlabel('z');
+title('单叶双曲面 (一负两正)');
+axis equal;
+view(45, 30);
+grid on;
+
+%% ====================== 3. 双叶双曲面 ======================
+u = linspace(-1.2, 1.2, 30);
+v = linspace(0, 2*pi, 50);
+[U, V] = meshgrid(u, v);
+
+X3_right = cosh(U);
+Y3_right = sinh(U) .* cos(V);
+Z3_right = sinh(U) .* sin(V);
+
+X3_left = -cosh(U);
+Y3_left = sinh(U) .* cos(V);
+Z3_left = sinh(U) .* sin(V);
+
+subplot(1, 3, 3);
+surf(X3_right, Y3_right, Z3_right, 'FaceAlpha', 0.85, 'EdgeColor', 'none');
+hold on;
+surf(X3_left, Y3_left, Z3_left, 'FaceAlpha', 0.85, 'EdgeColor', 'none');
 hold off;
+shading interp;
+xlabel('x'); ylabel('y'); zlabel('z');
+title('双叶双曲面 (两负一正)');
+axis equal;
+view(45, 30);
+grid on;
 
-% --- 情形2：负定二次型（椭圆，但需取 -1 值） ---
-subplot(2, 2, 2);
-A_negdef = -A_posdef; % 负定矩阵
-[x, y] = meshgrid(-1.5:0.05:1.5, -1.5:0.05:1.5);
-z_neg = A_negdef(1,1)*x.^2 + 2*A_negdef(1,2)*x.*y + A_negdef(2,2)*y.^2;
+%% ====================== 输出特征值分析 ======================
+fprintf('========== 二次型与三维二次曲面特征值分析 ==========\n\n');
+fprintf('1. 椭球面 (正定矩阵):\n');
+fprintf('   对应矩阵 A1 = diag(0.5, 1, 1/3)\n');
+fprintf('   特征值: λ1 = 0.5, λ2 = 1, λ3 = 0.333 (均为正)\n');
+fprintf('   曲面类型: 椭球面 (封闭有界)\n\n');
 
-% 绘制 x^T A x = -1 （即二次型值为 -1 的等高线）
-contour(x, y, z_neg, [-1, -1], 'b', 'LineWidth', 2);
-hold on; grid on; axis equal;
-xlim([-1.5, 1.5]); ylim([-1.5, 1.5]);
-xlabel('x'); ylabel('y');
-title('负定二次型: x^T A x = -1 (椭圆)');
-text(0, 0, '所有x≠0时\nx^T A x < 0', 'HorizontalAlignment', 'center', 'FontSize', 10);
-hold off;
+fprintf('2. 单叶双曲面 (不定矩阵):\n');
+fprintf('   对应矩阵 A2 = diag(1, 1, -1)\n');
+fprintf('   特征值: λ1 = 1, λ2 = 1, λ3 = -1 (一负两正)\n');
+fprintf('   曲面类型: 单叶双曲面 (单叶无限延伸)\n\n');
 
-% --- 情形3：不定二次型（双曲线） ---
-subplot(2, 2, 3);
-A_indef = [1, 2; 2, -1]; % 不定矩阵，特征值一正一负
-[V_indef, D_indef] = eig(A_indef);
-fprintf('不定矩阵 A = \n'); disp(A_indef);
-fprintf('特征值: λ1=%.1f, λ2=%.1f\n', D_indef(1,1), D_indef(2,2));
+fprintf('3. 双叶双曲面 (不定矩阵):\n');
+fprintf('   对应矩阵 A3 = diag(1, -1, -1)\n');
+fprintf('   特征值: λ1 = 1, λ2 = -1, λ3 = -1 (两负一正)\n');
+fprintf('   曲面类型: 双叶双曲面 (双叶分离)\n\n');
 
-[x, y] = meshgrid(-2.5:0.05:2.5, -2.5:0.05:2.5); % 双曲线需要稍大范围
-z_indef = A_indef(1,1)*x.^2 + 2*A_indef(1,2)*x.*y + A_indef(2,2)*y.^2;
-
-% 绘制 x^T A x = 1 和 x^T A x = -1
-contour(x, y, z_indef, [1, 1], 'r', 'LineWidth', 1.5);
-hold on; grid on; axis equal;
-contour(x, y, z_indef, [-1, -1], 'b', 'LineWidth', 1.5);
-
-% 绘制渐近线方向（特征向量方向）
-quiver(0, 0, V_indef(1,1)*2, V_indef(2,1)*2, 0, 'k', 'LineWidth', 1.5, 'MaxHeadSize', 0.3);
-quiver(0, 0, V_indef(1,2)*2, V_indef(2,2)*2, 0, 'k', 'LineWidth', 1.5, 'MaxHeadSize', 0.3);
-xlim([-2.5, 2.5]); ylim([-2.5, 2.5]);
-xlabel('x'); ylabel('y');
-title('不定二次型: x^T A x = ±1 (双曲线)');
-legend('x^T A x = 1', 'x^T A x = -1', '特征向量(渐近线方向)');
-hold off;
-
-% --- 情形4：半正定二次型（退化为平行直线） ---
-subplot(2, 2, 4);
-A_semidef = [1, 0; 0, 0]; % 半正定矩阵（秩1）
-[x, y] = meshgrid(-1.5:0.05:1.5, -1.5:0.05:1.5);
-z_semi = A_semidef(1,1)*x.^2; % 即 x^2
-
-contour(x, y, z_semi, [1, 1], 'b', 'LineWidth', 2);
-hold on; grid on; axis equal;
-xlim([-1.5, 1.5]); ylim([-1.5, 1.5]);
-xlabel('x'); ylabel('y');
-title('半正定二次型: x^T A x = 1 (平行直线)');
-text(0, 1.3, '秩为1，特征值λ2=0', 'HorizontalAlignment', 'center', 'FontSize', 10);
-hold off;
+fprintf('【核心结论】\n');
+fprintf('  - 特征值全正 → 椭球面 (封闭有界)\n');
+fprintf('  - 特征值一负两正 → 单叶双曲面\n');
+fprintf('  - 特征值两负一正 → 双叶双曲面\n');
+fprintf('  - 出现零特征值 → 抛物面或柱面 (退化情形)\n\n');
